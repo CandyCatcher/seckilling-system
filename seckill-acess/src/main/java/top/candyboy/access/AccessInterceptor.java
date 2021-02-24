@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
+//import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import top.candyboy.pojo.User;
+import top.candyboy.redis.key.AccessKey;
 import top.candyboy.result.CodeMsg;
 import top.candyboy.result.Result;
 import top.candyboy.service.RedisService;
@@ -18,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
 @Service
-public class AccessInterceptor extends HandlerInterceptorAdapter {
+public class AccessInterceptor implements HandlerInterceptor {
     UserService userService;
     RedisService redisService;
 
@@ -44,7 +46,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
             AccessLimit accessLimit = handlerMethod.getMethodAnnotation(AccessLimit.class);
             if (accessLimit == null) {
                 return true;
-            };
+            }
             int seconds = accessLimit.seconds();
             int maxCount = accessLimit.maxCount();
             //对于登录功能使用拦截器最好

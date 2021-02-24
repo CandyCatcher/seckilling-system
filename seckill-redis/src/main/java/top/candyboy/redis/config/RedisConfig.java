@@ -1,4 +1,4 @@
-package top.candyboy.config;
+package top.candyboy.redis.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,7 +23,3 @@ public class RedisConfig {
     }
 
 }
-
-
-
-

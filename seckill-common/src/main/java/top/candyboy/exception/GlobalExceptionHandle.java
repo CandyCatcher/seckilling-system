@@ -5,8 +5,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import top.candy.seckilling.result.CodeMsg;
-import top.candy.seckilling.result.Result;
+import top.candyboy.result.CodeMsg;
+import top.candyboy.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

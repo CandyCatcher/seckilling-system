@@ -11,12 +11,12 @@
 
     <artifactId>seckill-api</artifactId>
     <dependencies>
-        <dependency>
-            <groupId>top.candyboy</groupId>
-            <artifactId>seckill-rabbitmq</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--<dependency>-->
+        <!--    <groupId>top.candyboy</groupId>-->
+        <!--    <artifactId>seckill-rabbitmq</artifactId>-->
+        <!--    <version>1.0-SNAPSHOT</version>-->
+        <!--    <scope>compile</scope>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>top.candyboy</groupId>
             <artifactId>seckill-service</artifactId>
