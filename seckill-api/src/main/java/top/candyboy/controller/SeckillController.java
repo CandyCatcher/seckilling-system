@@ -77,18 +77,18 @@ public class SeckillController implements InitializingBean {
      * 系统初始化
      * @throws Exception
      */
-    //@Override
-    //public void afterPropertiesSet() throws Exception {
-    //    List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
-    //    if (listCommodityVO == null) {
-    //        return;
-    //    }
-    //    for (CommodityVo commodityVo:listCommodityVO) {
-    //        redisService.set(CommodityKey.getCommodityId, "" + commodityVo.getId(), commodityVo.getStockCount());
-    //        //System.out.println("stock count  " + commodityVo.getId() + " + " + commodityVo.getStockCount());
-    //        longOverMap.put(commodityVo.getId(), false);
-    //    }
-    //}
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
+        if (listCommodityVO == null) {
+            return;
+        }
+        for (CommodityVo commodityVo:listCommodityVO) {
+            redisService.set(CommodityKey.getCommodityId, "" + commodityVo.getId(), commodityVo.getStockCount());
+            //System.out.println("stock count  " + commodityVo.getId() + " + " + commodityVo.getStockCount());
+            longOverMap.put(commodityVo.getId(), false);
+        }
+    }
 
     /*
     get和post真正的区别
