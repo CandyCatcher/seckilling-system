@@ -14,7 +14,7 @@ import top.candyboy.result.Result;
 import top.candyboy.service.SeckillService;
 import top.candyboy.service.UserService;
 
-@Controller
+@RestController
 public class DemoController {
 
     UserService userService;
@@ -39,19 +39,18 @@ public class DemoController {
         this.seckillService = seckillService;
     }
 
-    @RequestMapping("/getUser")
+    @GetMapping("/getUser")
     public Result<User> getUserById() {
         User user = userService.getUserById(Long.valueOf("18654871682"));
         return Result.success(user);
     }
 
-
-    @RequestMapping("/helloSuccess")
+    @GetMapping("/helloSuccess")
     Result<String> home() {
         return Result.success("hello spring");
     }
 
-    @RequestMapping("/helloError")
+    @GetMapping("/helloError")
     public Result<String> hello2() {
         return Result.error(CodeMsg.SERVER_ERROR);
     }
@@ -90,21 +89,21 @@ public class DemoController {
     抽象类     实现一些通用方法
     实用类     实现特有方法
      */
-    @GetMapping("/redis/set")
-    public Result<Boolean> set() {
-        User user = new User();
-        user.setNickname("lingLing");
-        //使用一个前缀
-        redisService.set(UserKey.getByName, "123", user);
-        return Result.success(true);
-    }
-
-    @GetMapping("/redis/get")
-    public Result<User> get() {
-        User user = redisService.get(UserKey.getByName, "123", User.class);
-        System.out.println(user);
-        return Result.success(user);
-    }
+    //@GetMapping("/redis/set")
+    //public Result<Boolean> set() {
+    //    User user = new User();
+    //    user.setNickname("lingLing");
+    //    //使用一个前缀
+    //    redisService.set(UserKey.getByName, "123", user);
+    //    return Result.success(true);
+    //}
+    //
+    //@GetMapping("/redis/get")
+    //public Result<User> get() {
+    //    User user = redisService.get(UserKey.getByName, "123", User.class);
+    //    //System.out.println(user);
+    //    return Result.success(user);
+    //}
 
     @RequestMapping("/mq")
     @ResponseBody

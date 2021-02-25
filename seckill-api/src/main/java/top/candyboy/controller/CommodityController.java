@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,9 +20,11 @@ import top.candyboy.service.CommodityService;
 import top.candyboy.service.UserService;
 import top.candyboy.pojo.vo.CommodityDetailVo;
 import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.util.JsonUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -55,7 +57,7 @@ public class CommodityController {
         this.applicationContext = applicationContext;
     }
 
-    @RequestMapping("to_Commodity")
+    @RequestMapping("Commodity")
     public String toCommodity(Model model,
                           //HttpServletResponse response,
                           //这里是在服务端拿到token
@@ -78,32 +80,37 @@ public class CommodityController {
         return "items";
     }
 
-    @RequestMapping(value = "to_list", produces = "text/html")
+    @RequestMapping(value = "/commodityList", produces = "text/html")
     @ResponseBody
-    //@ResponseBody什么作用
-    public String list(HttpServletRequest request, HttpServletResponse response, Model model) {
-        //先从redis缓存中取，动态的数据也缓存了，所以先看缓存
-        String html = redisService.get(CommodityKey.getCommodityList, "", String.class);
-        if (!StringUtils.isEmpty(html)) {
-            return html;
+    public Result<?> list(HttpServletRequest request, HttpServletResponse response, Model model) {
+        /*
+        1.redis缓存中是否有
+        2.  没有的话添加
+            有的话直接获取
+         */
+        List<CommodityVo>  commodityVoList = new ArrayList<>();
+        String commodityVoListStr = redisService.get(CommodityKey.getCommodityList, "", String.class);
+        if (StringUtils.isBlank(commodityVoListStr)) {
+            commodityVoList = commodityService.getListCommodityVO();
+            //redisService.set(CommodityKey.getCommodityList, "", JsonUtil.objectToJson(commodityVoList));
+        } else {
+            commodityVoList = JsonUtil.jsonToList(commodityVoListStr, CommodityVo.class);
         }
+        return Result.success(commodityVoList);
 
-        List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
-        model.addAttribute("commodityList", listCommodityVO);
+        //model.addAttribute("commodityList", listCommodityVO);
         //return "commodity_list";
-
-
-        WebContext webContext = new WebContext(request, response, request.getServletContext(), request.getLocale(), model.asMap());
+        //WebContext webContext = new WebContext(request, response, request.getServletContext(), request.getLocale(), model.asMap());
         //手动渲染 使用thymeleafViewResolver
-        html = thymeleafViewResolver.getTemplateEngine().process("commodity_list", webContext);
-        if (!StringUtils.isEmpty(html)) {
-            redisService.set(CommodityKey.getCommodityList, "", html);
-        }
-        return html;
+        //html = thymeleafViewResolver.getTemplateEngine().process("commodity_list", webContext);
+        //if (!StringUtils.isEmpty(html)) {
+        //    redisService.set(CommodityKey.getCommodityList, "", );
+        //}
+        //return Result.success(commodityVoList);
     }
 
     //数据库中的id很少是自增的，uuid的也没有， 用的都是snowflake
-    @RequestMapping(value = "to_detail1/{commodityId}", produces = "text/html")
+    @RequestMapping(value = "detail1/{commodityId}", produces = "text/html")
     public String detail1(HttpServletRequest request, HttpServletResponse response, Model model, User user, @PathVariable("commodityId")Long commodityId) {
         model.addAttribute("user", user);
         CommodityVo commodityVo = commodityService.getCommodityVoById(commodityId);
@@ -146,7 +153,7 @@ public class CommodityController {
         return html;
     }
 
-    @RequestMapping(value = "to_detail/{commodityId}")
+    @RequestMapping(value = "detail/{commodityId}")
     @ResponseBody
     public Result<CommodityDetailVo> detail(HttpServletRequest request, HttpServletResponse response, User user, @PathVariable("commodityId")Long commodityId) {
         CommodityVo commodityVo = commodityService.getCommodityVoById(commodityId);

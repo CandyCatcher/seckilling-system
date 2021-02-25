@@ -77,25 +77,25 @@ public class SeckillController implements InitializingBean {
      * 系统初始化
      * @throws Exception
      */
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
-        if (listCommodityVO == null) {
-            return;
-        }
-        for (CommodityVo commodityVo:listCommodityVO) {
-            redisService.set(CommodityKey.getCommodityId, "" + commodityVo.getId(), commodityVo.getStockCount());
-            //System.out.println("stock count  " + commodityVo.getId() + " + " + commodityVo.getStockCount());
-            longOverMap.put(commodityVo.getId(), false);
-        }
-    }
+    //@Override
+    //public void afterPropertiesSet() throws Exception {
+    //    List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
+    //    if (listCommodityVO == null) {
+    //        return;
+    //    }
+    //    for (CommodityVo commodityVo:listCommodityVO) {
+    //        redisService.set(CommodityKey.getCommodityId, "" + commodityVo.getId(), commodityVo.getStockCount());
+    //        //System.out.println("stock count  " + commodityVo.getId() + " + " + commodityVo.getStockCount());
+    //        longOverMap.put(commodityVo.getId(), false);
+    //    }
+    //}
 
     /*
     get和post真正的区别
     get是密等的 不会对服务端产生影响
     post相反
      */
-    @RequestMapping(value = "/do_seckill/{path}", method = RequestMethod.POST)
+    @RequestMapping(value = "/doseckill/{path}", method = RequestMethod.POST)
     @ResponseBody
     //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
     public Result<Integer> secSkill(User user, @RequestParam("commodityId")Long commodityId, @PathVariable("path") String path) {

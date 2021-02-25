@@ -4,17 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import top.candyboy.result.CodeMsg;
 import top.candyboy.result.Result;
 import top.candyboy.service.UserService;
 import top.candyboy.pojo.vo.LoginVo;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-@Controller
+@RestController
 public class LoginController {
     private static Logger log = LoggerFactory.getLogger(LoginController.class);
 
@@ -26,18 +26,18 @@ public class LoginController {
 
     //不要使用@RestController
     //不能使用@ResponseBody
-    @RequestMapping("/to_login")
+    @PostMapping("/tologin")
     public String toLogin() {
         return "/login";
     }
 
-    @RequestMapping("/do_login")
+    @PostMapping("/dologin")
     //要加上这个注解
     @ResponseBody
-    public Result<Boolean> doLogin(HttpServletResponse response,  @Valid LoginVo loginVo) {
+    public Result<Boolean> doLogin(HttpServletResponse response, @Valid LoginVo loginVo) {
     //public Result<Boolean> doLogin(LoginVo loginVo) {
 
-            log.info(loginVo.toString());
+        log.info(loginVo.toString());
         //参数校验
         //每次都要这么一堆参数校验
         /*
@@ -62,8 +62,8 @@ public class LoginController {
                 return Result.error(codeMsg);
             }
         */
-        userService.login(response, loginVo);
-        return Result.success(true);
+
+        return userService.login(response, loginVo);
     }
 
 }

@@ -18,6 +18,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>top.candyboy</groupId>
             <artifactId>seckill-redis</artifactId>
             <version>1.0-SNAPSHOT</version>

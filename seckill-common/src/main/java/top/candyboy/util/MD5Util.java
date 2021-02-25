@@ -18,7 +18,9 @@ public class MD5Util {
         return DigestUtils.md5Hex(string);
     }
 
-    //第一次md5
+    /*
+    做第一次md5
+     */
     public static String inputPassToFormPass(String inputPass) {
         //做一次拼装，然后再做md5
         //如果不加“”的话，前面是进行数字计算
@@ -29,25 +31,26 @@ public class MD5Util {
     }
 
     /*
+    做第二次md5
     第一个salt不写死，服务端就没法破解密码了
     第二个salt是可以存入到服务器中的，所以随机的
      */
-    //这里测试了一下
-    // public static String formPassToDBPass(String formPass, String salt) {}
     // 结果使用的是类中的salt
     public static String formPassToDBPass(String formPass, String saltDB) {
         String str = saltDB.charAt(1) + saltDB.charAt(3) + formPass + saltDB.charAt(5) + saltDB.charAt(7);
         return md5(str);
     }
 
-    //用户输入的明文密码直接转换成数据库的密码
+    /*
+    用户输入的明文密码直接转换成数据库的密码
+     */
     public static String inputPassToDBPass(String inputPass, String saltDB) {
         String str = inputPassToFormPass(inputPass);
         return formPassToDBPass(str, saltDB);
     }
 
-    //public static void main(String[] args) {
-    //    System.out.println(inputPassToFormPass("131265"));
-    //    System.out.println(inputPassToDBPass("131265", "D2n4L0r9"));
-    //}
+    public static void main(String[] args) {
+        System.out.println(inputPassToDBPass("tian1234", "D2n4L0r9"));
+        System.out.println(formPassToDBPass("tian1234", "D2n4L0r9"));
+    }
 }

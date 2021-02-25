@@ -8,6 +8,7 @@ import top.candyboy.UserDao;
 import top.candyboy.pojo.User;
 import top.candyboy.redis.key.UserKey;
 import top.candyboy.result.CodeMsg;
+import top.candyboy.result.Result;
 import top.candyboy.util.MD5Util;
 import top.candyboy.util.UUIDUtil;
 import top.candyboy.pojo.vo.LoginVo;
@@ -38,7 +39,7 @@ public class UserService {
 
     //返回CodeMsg在实际开发当中并不常见，应该返回真正能代表业务含义的东西
     //public CodeMsg login(LoginVo loginVo) {
-    public boolean login(HttpServletResponse response, LoginVo loginVo) {
+    public Result<Boolean> login(HttpServletResponse response, LoginVo loginVo) {
         if (loginVo == null) {
             //return CodeMsg.SERVER_ERROR;
             throw new GlobalException(CodeMsg.SERVER_ERROR);
@@ -51,7 +52,8 @@ public class UserService {
         User user = getUserById(Long.valueOf(mobile));
         if (user == null) {
             //return CodeMsg.MOBILE_NOT_EXIST;
-            throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
+            return Result.error(CodeMsg.MOBILE_NOT_EXIST);
+            //throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
         }
         //验证密码是否正确,需要将密码转换为md5格式的
         String userPassword = user.getPassword();
@@ -59,7 +61,8 @@ public class UserService {
         String calPass = MD5Util.formPassToDBPass(password, userSalt);
         if (!calPass.equals(userPassword)) {
             //return CodeMsg.PASSWORD_ERROR;
-            throw new GlobalException(CodeMsg.PASSWORD_ERROR);
+            return Result.error(CodeMsg.PASSWORD_ERROR);
+            //throw new GlobalException(CodeMsg.PASSWORD_ERROR);
         }
         /*
         登录成功之后给这个用户创建一个类似于sessionId的东西标示这个用户，我们称之为token
@@ -70,7 +73,7 @@ public class UserService {
         //生成cookie
         String token = UUIDUtil.uuid();
         addCookie(response, token, user);
-        return true;
+        return Result.success(true);
     }
 
     private void addCookie(HttpServletResponse response, String token, User user) {

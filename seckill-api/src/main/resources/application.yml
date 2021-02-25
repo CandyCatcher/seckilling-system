@@ -1,22 +1,52 @@
+############################################################
+#
+# web访问端口号  约定：8080
+#
+############################################################
 server:
-  port: 8080
+  port: 8088
+  tomcat:
+    uri-encoding: UTF-8
+  max-http-header-size: 80KB
+### 配置数据源和mybatis
+############################################################
+#
+# 配置数据源信息
+#
+############################################################
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/seckilling
+    url: jdbc:mysql://localhost:3306/seckilling?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=UTC
     username: root
     password: root
+    hikari:
+      connection-timeout: 30000       # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQLException， 默认:30秒
+      minimum-idle: 5                 # 最小连接数
+      maximum-pool-size: 20           # 最大连接数
+      auto-commit: true               # 自动提交
+      idle-timeout: 600000            # 连接超时的最大时长（毫秒），超时则被释放（retired），默认:10分钟
+      pool-name: DateSourceHikariCP   # 连接池名字
+      max-lifetime: 1800000           # 连接的生命时长（毫秒），超时而且没被使用则被释放（retired），默认:30分钟 1800000ms
+      connection-test-query: SELECT 1
+      servlet:
+        multipart:
+          max-file-size: 512000     # 文件上传大小限制为500kb
+          max-request-size: 512000  # 请求大小限制为500kb
+
+#      session:
+#        store-type: redis
 #    type: com.alibaba.druid.pool.DruidDataSource
-  thymeleaf:
-    cache: false
-    servlet:
-      content-type: text/html
-    enabled: true
-    encoding: UTF-8
-    mode: HTML5
-    prefix: classpath:templates/
-    suffix: .html
+#  thymeleaf:
+#    cache: false
+#    servlet:
+#      content-type: text/html
+#    enabled: true
+#    encoding: UTF-8
+#    mode: HTML5
+#    prefix: classpath:templates/
+#    suffix: .html
   redis:
     host: 127.0.0.1
     port: 6379
@@ -53,8 +83,16 @@ spring:
           enabled: true
           initial-interval: 1000
           max-attempts: 3
-mybatis:
-  type-aliases-package: top.candyboy.pojo
+############################################################
+#
+# mybatis mapper 配置
+#
+############################################################
+# 通用 Mapper 配置
+mapper:
+  mappers: top.candyboy.my.mapper.MyMapper
+  not-empty: false    # 在进行数据库操作的的时候，比如判断表达式 username != null, 是否追加 username != ''
+  identity: MYSQL
 #  mapper-locations: classpath:/top/candyboy/pojo/*.xml
   configuration:
     map-underscore-to-camel-case: true

@@ -13,10 +13,8 @@
         <module>seckill-common</module>
         <module>seckill-service</module>
         <module>seckill-mapper</module>
-        <module>seckill-redis</module>
         <module>seckill-api</module>
-        <module>seckill-rabbitmq</module>
-        <module>seckill-acess</module>
+        <module>seckill-redis</module>
     </modules>
 
     <parent>
