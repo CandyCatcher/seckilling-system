@@ -114,14 +114,14 @@ public class DemoController {
         user.setNickname("qwe");
         SeckillMessage seckillMessage = new SeckillMessage();
         seckillMessage.setUser(user);
-        seckillMessage.setCommodityId((long) 2345678);
+        seckillMessage.setItemId((long) 2345678);
         sender.sendMessage(seckillMessage);
         return Result.success("hello");
     }
 
     @RequestMapping(value = "/demo")
     @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
+    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("itemId")Long itemId) {
     public Result<String> secSkillResult() {
         //获取状态
         /*

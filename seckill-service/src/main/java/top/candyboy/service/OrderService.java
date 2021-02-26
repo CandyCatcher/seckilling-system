@@ -7,7 +7,7 @@ import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
 import top.candyboy.redis.key.OrderKey;
-import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.pojo.vo.ItemVo;
 
 import java.util.Date;
 
@@ -25,20 +25,20 @@ public class OrderService {
         this.redisService = redisService;
     }
 
-    public SeckillOrder getSeckillOrderByUserIdCommodityId(Long userId, Long commodityId) {
-        //return orderDao.getSeckillOrderByUserIdCommodityId(userId, commodityId);
+    public SeckillOrder getSeckillOrderByUserIdItemId(Long userId, Long itemId) {
+        //return orderDao.getSeckillOrderByUserIdItemId(userId, itemId);
     //    去查缓存
-        SeckillOrder seckillOrder =  redisService.get(OrderKey.getSeckillOrderByUidGid, userId + "_" + commodityId, SeckillOrder.class);
+        SeckillOrder seckillOrder =  redisService.get(OrderKey.getSeckillOrderByUidGid, userId + "_" + itemId, SeckillOrder.class);
         return seckillOrder;
     }
 
-    public OrderInfo createOrder(User user, CommodityVo commodityVo) {
+    public OrderInfo createOrder(User user, ItemVo itemVo) {
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setCreateDate(new Date());
-        orderInfo.setCommodityCount(1);
-        orderInfo.setCommodityId(commodityVo.getId());
-        orderInfo.setCommodityName(commodityVo.getCommodityName());
-        orderInfo.setCommodityPrice(commodityVo.getSeckillingPrice());
+        orderInfo.setItemCount(1);
+        orderInfo.setItemId(itemVo.getId());
+        orderInfo.setItemName(itemVo.getItemName());
+        orderInfo.setItemPrice(itemVo.getSeckillingPrice());
         orderInfo.setOrderChannel(1);
         orderInfo.setStatus(0);
         orderInfo.setUserId(user.getId());
@@ -46,11 +46,11 @@ public class OrderService {
 
         SeckillOrder seckillOrder = new SeckillOrder();
         seckillOrder.setUserId(user.getId());
-        seckillOrder.setCommodityId(commodityVo.getId());
+        seckillOrder.setItemId(itemVo.getId());
         seckillOrder.setOrderId(orderInfo.getId());
-        //System.out.println(seckillOrder.getCommodityId());
+        //System.out.println(seckillOrder.getItemId());
         orderDao.insertSeckillOrder(seckillOrder);
-        redisService.set(OrderKey.getSeckillOrderByUidGid, user.getId() + "_" + commodityVo.getId(), seckillOrder);
+        redisService.set(OrderKey.getSeckillOrderByUidGid, user.getId() + "_" + itemVo.getId(), seckillOrder);
         return orderInfo;
     }
 

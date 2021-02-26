@@ -5,6 +5,6 @@ import top.candyboy.pojo.OrderInfo;
 
 @Data
 public class OrderDetailVo {
-    private CommodityVo commodityVo;
+    private ItemVo itemVo;
     private OrderInfo orderInfo;
 }

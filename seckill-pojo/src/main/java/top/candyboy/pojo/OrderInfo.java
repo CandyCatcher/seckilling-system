@@ -8,11 +8,11 @@ import java.util.Date;
 public class OrderInfo {
     private Long id;
     private Long userId;
-    private Long commodityId;
+    private Long itemId;
     private Long  deliveryAddrId;
-    private String commodityName;
-    private Integer commodityCount;
-    private Double commodityPrice;
+    private String itemName;
+    private Integer itemCount;
+    private Double itemPrice;
     private Integer orderChannel;
     private Integer status;
     private Date createDate;

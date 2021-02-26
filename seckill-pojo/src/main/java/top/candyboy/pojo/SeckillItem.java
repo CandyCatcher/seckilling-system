@@ -5,9 +5,9 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class SeckillCommodity {
+public class SeckillItem {
     private Long id;
-    private Long commodityId;
+    private Long itemId;
     private Double seckillPrice;
     private Integer stockCount;
     private Date startDate;

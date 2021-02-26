@@ -7,5 +7,5 @@ public class SeckillOrder {
     private Long id;
     private Long userId;
     private Long orderId;
-    private Long commodityId;
+    private Long itemId;
 }

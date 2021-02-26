@@ -6,11 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
-import top.candyboy.redis.key.CommodityKey;
+import top.candyboy.redis.key.ItemKey;
 import top.candyboy.redis.key.SeckillKey;
 import top.candyboy.util.MD5Util;
 import top.candyboy.util.UUIDUtil;
-import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.pojo.vo.ItemVo;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -22,12 +22,12 @@ import java.util.Random;
 public class SeckillService {
     private static char[] ops = new char[]{'+', '-', '*'};
 
-    CommodityService commodityService;
+    ItemService itemService;
     OrderService orderService;
     RedisService redisService;
     @Autowired
-    public void setCommodityService(CommodityService commodityService) {
-        this.commodityService = commodityService;
+    public void setItemService(ItemService itemService) {
+        this.itemService = itemService;
     }
     @Autowired
     public void setOrderService(OrderService orderService) {
@@ -40,27 +40,27 @@ public class SeckillService {
 
     //进行秒杀减库存
     @Transactional
-    public OrderInfo doSeckill(User user, CommodityVo commodityVo) {
+    public OrderInfo doSeckill(User user, ItemVo itemVo) {
         //减库存
-        boolean reduceStock = commodityService.reduceStock(commodityVo);
+        boolean reduceStock = itemService.reduceStock(itemVo);
         if (reduceStock) {
             //下订单
-            return orderService.createOrder(user, commodityVo);
+            return orderService.createOrder(user, itemVo);
         } else {
             //没库存了，将商品id加载到库存中
-            setCommodityOver(commodityVo.getId());
+            setItemOver(itemVo.getId());
             return null;
         }
     }
 
-    public long getSeckillResult(Long userId, Long commodityId) {
-        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdCommodityId(userId, commodityId);
+    public long getSeckillResult(Long userId, Long itemId) {
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(userId, itemId);
         if (seckillOrder != null) {
             return seckillOrder.getOrderId();
         } else {
             //没有秒杀到，然后有两种情况：没库存，还在队列中
-            boolean commodityOver = getCommodityOver(commodityId);
-            if (commodityOver) {
+            boolean itemOver = getItemOver(itemId);
+            if (itemOver) {
                 return -1;
             } else {
                 return 0;
@@ -68,31 +68,31 @@ public class SeckillService {
         }
     }
 
-    private void setCommodityOver(Long commodityId) {
-        redisService.set(CommodityKey.stockOver, "" + commodityId, true);
+    private void setItemOver(Long itemId) {
+        redisService.set(ItemKey.stockOver, "" + itemId, true);
     }
 
-    private boolean getCommodityOver(Long commodityId) {
-        return redisService.exist(CommodityKey.stockOver, "" + commodityId);
+    private boolean getItemOver(Long itemId) {
+        return redisService.exist(ItemKey.stockOver, "" + itemId);
     }
 
-    public boolean checkPath(User user, Long commodityId, String path) {
+    public boolean checkPath(User user, Long itemId, String path) {
         if (user == null || path == null) {
             return false;
         }
-        String s = redisService.get(SeckillKey.getPath, user.getId() + "_" + commodityId, String.class);
+        String s = redisService.get(SeckillKey.getPath, user.getId() + "_" + itemId, String.class);
         return path.equals(s);
     }
 
-    public String createSeckillPath(User user, Long commodityId) {
+    public String createSeckillPath(User user, Long itemId) {
         String uuid = MD5Util.md5(UUIDUtil.uuid());
-        redisService.set(SeckillKey.getPath, user.getId() + "_" + commodityId, uuid);
+        redisService.set(SeckillKey.getPath, user.getId() + "_" + itemId, uuid);
         return uuid;
     }
 
-    public BufferedImage createVerifyCodeImg(User user, Long commodityId) {
+    public BufferedImage createVerifyCodeImg(User user, Long itemId) {
 
-        if (user == null && commodityId == null) {
+        if (user == null && itemId == null) {
             return null;
         }
         int width = 80;
@@ -124,7 +124,7 @@ public class SeckillService {
         g.dispose();
         //把验证码存到redis中
         int rnd = calc(verifyCode);
-        redisService.set(SeckillKey.getSeckillVerifyCode, user.getId()+"_"+commodityId, rnd);
+        redisService.set(SeckillKey.getSeckillVerifyCode, user.getId()+"_"+itemId, rnd);
         //输出图片
         return image;
     }
@@ -151,16 +151,16 @@ public class SeckillService {
         return "" + num1 + op1 + num2 + op2 + num3;
     }
 
-    public boolean checkVerifyCode(User user, Long commodityId, int verifyCode) {
-        if (user == null && commodityId <= 0) {
+    public boolean checkVerifyCode(User user, Long itemId, int verifyCode) {
+        if (user == null && itemId <= 0) {
             return false;
         }
-        Integer code = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "_" + commodityId, Integer.class);
+        Integer code = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "_" + itemId, Integer.class);
         if (code == null || code - verifyCode != 0) {
             return false;
         }
         //否则下一次用还是旧的
-        redisService.del(SeckillKey.getSeckillVerifyCode, user.getId()+","+commodityId);
+        redisService.del(SeckillKey.getSeckillVerifyCode, user.getId()+","+itemId);
         return true;
     }
 }

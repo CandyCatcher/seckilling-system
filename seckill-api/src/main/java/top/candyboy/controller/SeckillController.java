@@ -8,15 +8,15 @@ import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
 import top.candyboy.rabbitmq.MQSender;
 import top.candyboy.rabbitmq.SeckillMessage;
-import top.candyboy.redis.key.CommodityKey;
+import top.candyboy.redis.key.ItemKey;
 import top.candyboy.service.RedisService;
 import top.candyboy.redis.key.SeckillKey;
 import top.candyboy.result.CodeMsg;
 import top.candyboy.result.Result;
-import top.candyboy.service.CommodityService;
+import top.candyboy.service.ItemService;
 import top.candyboy.service.OrderService;
 import top.candyboy.service.SeckillService;
-import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.pojo.vo.ItemVo;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -47,14 +47,14 @@ public class SeckillController implements InitializingBean {
     private Map<Long, Boolean> longOverMap = new HashMap<>();
 
     OrderService orderService;
-    CommodityService commodityService;
+    ItemService ItemService;
     SeckillService seckillService;
     RedisService redisService;
     MQSender mqSender;
 
     @Autowired
-    public void setCommodityService(CommodityService commodityService) {
-        this.commodityService = commodityService;
+    public void setItemService(ItemService ItemService) {
+        this.ItemService = ItemService;
     }
     @Autowired
     public void setOrderService(OrderService orderService) {
@@ -79,14 +79,14 @@ public class SeckillController implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        List<CommodityVo> listCommodityVO = commodityService.getListCommodityVO();
-        if (listCommodityVO == null) {
+        List<ItemVo> listItemVO = ItemService.getListItemVO();
+        if (listItemVO == null) {
             return;
         }
-        for (CommodityVo commodityVo:listCommodityVO) {
-            redisService.set(CommodityKey.getCommodityId, "" + commodityVo.getId(), commodityVo.getStockCount());
-            //System.out.println("stock count  " + commodityVo.getId() + " + " + commodityVo.getStockCount());
-            longOverMap.put(commodityVo.getId(), false);
+        for (ItemVo ItemVo:listItemVO) {
+            redisService.set(ItemKey.getItemId, "" + ItemVo.getId(), ItemVo.getStockCount());
+            //System.out.println("stock count  " + ItemVo.getId() + " + " + ItemVo.getStockCount());
+            longOverMap.put(ItemVo.getId(), false);
         }
     }
 
@@ -97,66 +97,66 @@ public class SeckillController implements InitializingBean {
      */
     @RequestMapping(value = "/doseckill/{path}", method = RequestMethod.POST)
     @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
-    public Result<Integer> secSkill(User user, @RequestParam("commodityId")Long commodityId, @PathVariable("path") String path) {
+    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
+    public Result<Integer> secSkill(User user, @RequestParam("ItemId")Long ItemId, @PathVariable("path") String path) {
 
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
         }
         //验证一下path
-        boolean check = seckillService.checkPath(user, commodityId, path);
+        boolean check = seckillService.checkPath(user, ItemId, path);
         if (!check) {
             return Result.error(CodeMsg.PATH_ILLEGEAL);
         }
         //第一步将库存加载到缓存中
         //这一步也是可以优化，之后的就不用访问redis了，使用一个内存标记
-        Boolean over = longOverMap.get(commodityId);
+        Boolean over = longOverMap.get(ItemId);
         if (over) {
             return Result.error(CodeMsg.SECKILL_OVER);
         }
-        Long stock = redisService.decr(CommodityKey.getCommodityId, "" + commodityId);
+        Long stock = redisService.decr(ItemKey.getItemId, "" + ItemId);
         //System.out.println(stock);
         if (stock < 0) {
             //一旦变为false就不需要访问redis了
-            longOverMap.put(commodityId, true);
+            longOverMap.put(ItemId, true);
             return Result.error(CodeMsg.SECKILL_OVER);
         }
         //第二步判断是否秒杀到了
-        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdCommodityId(user.getId(), commodityId);
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(user.getId(), ItemId);
         if (seckillOrder != null) {
             return Result.error(CodeMsg.REPEATE_SECKILL);
         }
         //第三步进行排队
         SeckillMessage message = new SeckillMessage();
         message.setUser(user);
-        message.setCommodityId(commodityId);
+        message.setItemId(ItemId);
         mqSender.sendMessage(message);
         return Result.success(0);
         /*
-        // System.out.println(commodityId);
+        // System.out.println(ItemId);
         // System.out.println(user.getNickname());
         // 判断库存 10个商品，一个用户同事发出两个请求req1 req2，那么就可以同时减库存了
         // 解决：加一个唯一索引
         // 这里在大并发的时候会出现负库存的情况
-        CommodityVo commodityVo = commodityService.getCommodityVoById(commodityId);
+        ItemVo ItemVo = ItemService.getItemVoById(ItemId);
 
-        Integer stockCount = commodityVo.getStockCount();
+        Integer stockCount = ItemVo.getStockCount();
         if (stockCount<= 0) {
             //model.addAttribute("erroMsg", CodeMsg.SECKILLING_OVER.getMsg());
             return Result.error(CodeMsg.SECKILLING_OVER);
         }
         //判断是否秒杀到了，是为了防止一个人秒杀到了多个商品，进入order中来查询
-        SeckillingOrder seckillingOrder = orderService.getSeckillingOrderByUserIdCommodityId(user.getId(), commodityId);
+        SeckillingOrder seckillingOrder = orderService.getSeckillingOrderByUserIdItemId(user.getId(), ItemId);
         if (seckillingOrder != null) {
             //model.addAttribute("errorMsg", CodeMsg.REPEATE_SECKILLING.getMsg());
             return Result.error(CodeMsg.REPEATE_SECKILLING);
         }
         //下订单并写入秒杀订单
-        OrderInfo orderInfo = seckillingService.seckilling(user, commodityVo);
+        OrderInfo orderInfo = seckillingService.seckilling(user, ItemVo);
         System.out.println(orderInfo.toString());
 
         //model.addAttribute("orderInfo", orderInfo);
-        //model.addAttribute("commodity", commodityVo);
+        //model.addAttribute("Item", ItemVo);
         return Result.success(orderInfo);
         //return "hello";
         */
@@ -164,8 +164,8 @@ public class SeckillController implements InitializingBean {
 
     @RequestMapping(value = "/seckill_result", method = RequestMethod.GET)
     @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
-    public Result<Long> secSkillResult(User user, @RequestParam("commodityId")Long commodityId) {
+    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
+    public Result<Long> secSkillResult(User user, @RequestParam("ItemId")Long ItemId) {
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
         }
@@ -175,33 +175,33 @@ public class SeckillController implements InitializingBean {
             -1: 秒杀失败
             0: 排队成功
          */
-        Long result = seckillService.getSeckillResult(user.getId(), commodityId);
+        Long result = seckillService.getSeckillResult(user.getId(), ItemId);
         return Result.success(result);
     }
 
     @RequestMapping(value = "/getSeckillPath", method = RequestMethod.GET)
     @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
-    public Result<String> getSeckillPath(User user, @RequestParam("commodityId")Long commodityId, @RequestParam("verifyCode")int verifyCode) {
+    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
+    public Result<String> getSeckillPath(User user, @RequestParam("ItemId")Long ItemId, @RequestParam("verifyCode")int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
         }
-        boolean checkVerifyCode = seckillService.checkVerifyCode(user, commodityId, verifyCode);
+        boolean checkVerifyCode = seckillService.checkVerifyCode(user, ItemId, verifyCode);
         if (!checkVerifyCode) {
             return Result.error(CodeMsg.VERIFYCODE_ERROR);
         }
-        String seckillPath = seckillService.createSeckillPath(user, commodityId);
+        String seckillPath = seckillService.createSeckillPath(user, ItemId);
         return Result.success(seckillPath);
     }
 
     @RequestMapping(value = "/verifyCode", method = RequestMethod.GET)
     @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("commodityId")Long commodityId) {
-    public Result<String> getVerifyCode(User user, HttpServletResponse response, @RequestParam("commodityId")Long commodityId) {
+    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
+    public Result<String> getVerifyCode(User user, HttpServletResponse response, @RequestParam("ItemId")Long ItemId) {
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
         }
-        BufferedImage verifyCodeImg = seckillService.createVerifyCodeImg(user, commodityId);
+        BufferedImage verifyCodeImg = seckillService.createVerifyCodeImg(user, ItemId);
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             ImageIO.write(verifyCodeImg, "png", outputStream);

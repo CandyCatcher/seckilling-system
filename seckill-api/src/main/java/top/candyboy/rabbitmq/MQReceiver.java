@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
 import top.candyboy.service.RedisService;
-import top.candyboy.service.CommodityService;
+import top.candyboy.service.ItemService;
 import top.candyboy.service.OrderService;
 import top.candyboy.service.SeckillService;
-import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.pojo.vo.ItemVo;
 
 @Service
 public class MQReceiver {
@@ -19,7 +19,7 @@ public class MQReceiver {
 
     RedisService redisService;
     OrderService orderService;
-    CommodityService commodityService;
+    ItemService itemService;
     SeckillService seckillService;
 
     @Autowired
@@ -27,8 +27,8 @@ public class MQReceiver {
         MQReceiver.logger = logger;
     }
     @Autowired
-    public void setCommodityService(CommodityService commodityService) {
-        this.commodityService = commodityService;
+    public void setItemService(ItemService itemService) {
+        this.itemService = itemService;
     }
     @Autowired
     public void setOrderService(OrderService orderService) {
@@ -45,21 +45,21 @@ public class MQReceiver {
         SeckillMessage seckillMessage = RedisService.stringToBean(message, SeckillMessage.class);
 
         User user = seckillMessage.getUser();
-        Long commodityId = seckillMessage.getCommodityId();
+        Long itemId = seckillMessage.getItemId();
         // 判断库存
-        CommodityVo commodityVo = commodityService.getCommodityVoById(commodityId);
-        Integer stockCount = commodityVo.getStockCount();
+        ItemVo itemVo = itemService.getItemVoById(itemId);
+        Integer stockCount = itemVo.getStockCount();
         if (stockCount<= 0) {
             return;
         }
         //判断是否已秒杀
-        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdCommodityId(user.getId(), commodityId);
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(user.getId(), itemId);
         if (seckillOrder != null) {
             System.out.println("已经");
             return;
         }
         //下订单并写入秒杀订单
-        seckillService.doSeckill(user, commodityVo);
+        seckillService.doSeckill(user, itemVo);
     }
 
    /* @RabbitListener(queues = MQConfig.TOPIC_QUEUE1)

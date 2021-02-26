@@ -9,20 +9,20 @@ import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.User;
 import top.candyboy.result.CodeMsg;
 import top.candyboy.result.Result;
-import top.candyboy.service.CommodityService;
+import top.candyboy.service.ItemService;
 import top.candyboy.service.OrderService;
 import top.candyboy.service.SeckillService;
-import top.candyboy.pojo.vo.CommodityVo;
+import top.candyboy.pojo.vo.ItemVo;
 import top.candyboy.pojo.vo.OrderDetailVo;
 
 @Controller
 public class OrderController {
     OrderService orderService;
-    CommodityService commodityService;
+    ItemService itemService;
     SeckillService seckillService;
     @Autowired
-    public void setCommodityService(CommodityService commodityService) {
-        this.commodityService = commodityService;
+    public void setItemService(ItemService itemService) {
+        this.itemService = itemService;
     }
     @Autowired
     public void setOrderService(OrderService orderService) {
@@ -44,10 +44,10 @@ public class OrderController {
         if (orderInfo == null) {
             return Result.error(CodeMsg.ORDER_NOT_EXSIT);
         }
-        Long commodityId = orderInfo.getCommodityId();
-        CommodityVo commodityVo = commodityService.getCommodityVoById(commodityId);
+        Long itemId = orderInfo.getItemId();
+        ItemVo itemVo = itemService.getItemVoById(itemId);
         OrderDetailVo orderDetailVo = new OrderDetailVo();
-        orderDetailVo.setCommodityVo(commodityVo);
+        orderDetailVo.setItemVo(itemVo);
         orderDetailVo.setOrderInfo(orderInfo);
 
         return Result.success(orderDetailVo);
