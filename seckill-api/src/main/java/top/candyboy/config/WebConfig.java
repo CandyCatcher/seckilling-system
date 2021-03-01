@@ -14,6 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     UserArgumentResolver userArgumentResolver;
     AccessInterceptor accessInterceptor;
+    /*
+     框架调用这个方法往controller的参数赋值，遍历方法的参数名称，如果有的话，就将这个参数对应的值设置上
+     */
     @Autowired
     private void setUserArgumentResolver(UserArgumentResolver userArgumentResolver) {
         this.userArgumentResolver = userArgumentResolver;

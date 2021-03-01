@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Component;
-import top.candyboy.pojo.ItemImgs;
+import top.candyboy.pojo.ItemImg;
 import top.candyboy.pojo.SeckillItem;
 import top.candyboy.pojo.vo.ItemVo;
 
@@ -33,5 +33,5 @@ public interface ItemDao {
 
     @Select("select ii.id, ii.item_id itemId, ii.url, ii.sort, ii.is_main isMain, ii.created_time createTime, ii.updated_time updatedTime " +
             "from items_img ii where ii.item_id = #{itemId}")
-    public List<ItemImgs> getItemImgsById(Long itemId);
+    public List<ItemImg> getItemImgById(Long itemId);
 }

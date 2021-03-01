@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import top.candyboy.ItemDao;
-import top.candyboy.pojo.ItemImgs;
+import top.candyboy.pojo.ItemImg;
 import top.candyboy.pojo.SeckillItem;
 import top.candyboy.pojo.vo.ItemVo;
 
@@ -35,7 +35,7 @@ public class ItemService {
         return itemDao.reduceStock(seckillItem) > 0;
     }
 
-    public List<ItemImgs> getItemImgList(Long itemId) {
-        return itemDao.getItemImgsById(itemId);
+    public List<ItemImg> getItemImgs(Long itemId) {
+        return itemDao.getItemImgById(itemId);
     }
 }

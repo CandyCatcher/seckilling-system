@@ -1,14 +1,12 @@
 package top.candyboy.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import top.candyboy.pojo.User;
 import top.candyboy.rabbitmq.MQSender;
 import top.candyboy.rabbitmq.SeckillMessage;
-import top.candyboy.service.RedisService;
-import top.candyboy.redis.key.UserKey;
+import top.candyboy.redis.RedisOperation;
 import top.candyboy.result.CodeMsg;
 import top.candyboy.result.Result;
 import top.candyboy.service.SeckillService;
@@ -18,7 +16,7 @@ import top.candyboy.service.UserService;
 public class DemoController {
 
     UserService userService;
-    RedisService redisService;
+    RedisOperation redisOperation;
     MQSender sender;
     SeckillService seckillService;
 
@@ -27,8 +25,8 @@ public class DemoController {
         this.userService = userService;
     }
     @Autowired
-    public void setRedisService(RedisService redisService) {
-        this.redisService = redisService;
+    public void setRedisOperation(RedisOperation redisOperation) {
+        this.redisOperation = redisOperation;
     }
     @Autowired
     public void setSender(MQSender sender) {
@@ -94,13 +92,13 @@ public class DemoController {
     //    User user = new User();
     //    user.setNickname("lingLing");
     //    //使用一个前缀
-    //    redisService.set(UserKey.getByName, "123", user);
+    //    redisOperation.set(UserKey.getByName, "123", user);
     //    return Result.success(true);
     //}
     //
     //@GetMapping("/redis/get")
     //public Result<User> get() {
-    //    User user = redisService.get(UserKey.getByName, "123", User.class);
+    //    User user = redisOperation.get(UserKey.getByName, "123", User.class);
     //    //System.out.println(user);
     //    return Result.success(user);
     //}

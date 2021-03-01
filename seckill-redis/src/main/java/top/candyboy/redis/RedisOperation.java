@@ -1,4 +1,4 @@
-package top.candyboy.service;
+package top.candyboy.redis;
 
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,7 @@ import top.candyboy.redis.KeyPrefix;
 
 
 @Service
-public class RedisService {
+public class RedisOperation {
 
     JedisPool jedisPool;
     @Autowired
@@ -43,9 +43,9 @@ public class RedisService {
 
     /**
      * 设置对象
-     * @param prefix
-     * @param key
-     * @param value
+     * @param prefix 前缀
+     * @param key 键
+     * @param value 值
      * @param <T>
      * @return
      */

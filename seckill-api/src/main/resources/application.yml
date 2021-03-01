@@ -75,14 +75,20 @@ spring:
     listener:
       simple:
         concurrency: 10
+        # 消费者的数量
         max-concurrency: 10
+        # 队列中出队每次出几个 多几个，加快出队速率。但是太多的话，数据会一直得不到处理
         prefetch: 1
+        # 默认消费者自动启动
         auto-startup: true
+        # 消费者消费失败自动把数据压回去
         default-requeue-rejected: true
+        # 重置的信息
         retry:
           enabled: true
           initial-interval: 1000
           max-attempts: 3
+          multiplier: 1.0
 ############################################################
 #
 # mybatis mapper 配置

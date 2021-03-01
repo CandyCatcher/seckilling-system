@@ -2,7 +2,7 @@ package top.candyboy.pojo.vo;
 
 import lombok.Data;
 import top.candyboy.pojo.Item;
-import top.candyboy.pojo.ItemImgs;
+import top.candyboy.pojo.ItemImg;
 import top.candyboy.pojo.User;
 
 import java.util.List;
@@ -13,6 +13,6 @@ public class ItemDetailVo {
     private int remainSeconds;
     private Item item;
     private ItemVo itemVo;
-    private List<ItemImgs> itemImgs;
+    private List<ItemImg> itemImg;
     private User user;
 }

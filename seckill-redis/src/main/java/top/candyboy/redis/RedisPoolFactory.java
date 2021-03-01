@@ -1,4 +1,4 @@
-package top.candyboy.service;
+package top.candyboy.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

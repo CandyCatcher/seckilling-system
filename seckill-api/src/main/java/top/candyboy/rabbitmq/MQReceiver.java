@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
-import top.candyboy.service.RedisService;
+import top.candyboy.redis.RedisOperation;
 import top.candyboy.service.ItemService;
 import top.candyboy.service.OrderService;
 import top.candyboy.service.SeckillService;
@@ -17,7 +17,7 @@ import top.candyboy.pojo.vo.ItemVo;
 public class MQReceiver {
     private static Logger logger = LoggerFactory.getLogger(MQSender.class);
 
-    RedisService redisService;
+    RedisOperation redisOperation;
     OrderService orderService;
     ItemService itemService;
     SeckillService seckillService;
@@ -42,27 +42,38 @@ public class MQReceiver {
     @RabbitListener(queues = MQConfig.SECKILL_QUEUE)
     public void receive(String message) {
         logger.info("receiver message" + message);
-        SeckillMessage seckillMessage = RedisService.stringToBean(message, SeckillMessage.class);
+        SeckillMessage seckillMessage = RedisOperation.stringToBean(message, SeckillMessage.class);
 
         User user = seckillMessage.getUser();
         Long itemId = seckillMessage.getItemId();
-        // 判断库存
+
+        /*
+         判断库存
+         为什么在这里可以直接访问数据库，是因为此时很少有用户来到这里
+         */
         ItemVo itemVo = itemService.getItemVoById(itemId);
         Integer stockCount = itemVo.getStockCount();
         if (stockCount<= 0) {
             return;
         }
-        //判断是否已秒杀
+
+        /*
+        判断是否已秒杀
+         */
         SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(user.getId(), itemId);
         if (seckillOrder != null) {
-            System.out.println("已经");
+            System.out.println("已经秒杀完事儿了");
             return;
         }
-        //下订单并写入秒杀订单
+
+        /*
+        下订单并写入秒杀订单
+         */
         seckillService.doSeckill(user, itemVo);
     }
 
-   /* @RabbitListener(queues = MQConfig.TOPIC_QUEUE1)
+   /*
+    @RabbitListener(queues = MQConfig.TOPIC_QUEUE1)
     public void receiveTopic1(String message) {
         logger.info("topic queue1 message" + message);
     }
@@ -75,6 +86,7 @@ public class MQReceiver {
     @RabbitListener(queues = MQConfig.HEADER_QUEUE)
     public void receiveHeader(byte[] message) {
         logger.info("header queue message:  " + new String(message));
-    }*/
+    }
+    */
 
 }

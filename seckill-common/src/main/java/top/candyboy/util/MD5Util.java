@@ -1,6 +1,6 @@
 package top.candyboy.util;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.util.DigestUtils;
 
 /**
  * 为什么要做两次md5？
@@ -15,7 +15,7 @@ public class MD5Util {
     private static final String salt = "1A0tN54d";
 
     public static String md5(String string) {
-        return DigestUtils.md5Hex(string);
+        return DigestUtils.md5DigestAsHex(string.getBytes());
     }
 
     /*
@@ -25,7 +25,7 @@ public class MD5Util {
         //做一次拼装，然后再做md5
         //如果不加“”的话，前面是进行数字计算
         String str = "" + salt.charAt(0) + salt.charAt(7) + inputPass + salt.charAt(4) + salt.charAt(3);
-        //System.out.println("str:" + str);
+        System.out.println("str:" + str);
 
         return md5(str);
     }
@@ -50,7 +50,14 @@ public class MD5Util {
     }
 
     public static void main(String[] args) {
-        System.out.println(inputPassToDBPass("tian1234", "D2n4L0r9"));
-        System.out.println(formPassToDBPass("tian1234", "D2n4L0r9"));
+        System.out.println(inputPassToFormPass("tian1234"));
+        // 1c1e6545ed4ca306097488fbd0fae6f7
+        System.out.println(formPassToDBPass("a3e0bc5901e43f431d057cbb31ed5b6f", "D2n4L0r9"));
+        // 76a1290cda0be7d3c960d9bbc72ab41b
+
+        //System.out.println(inputPassToDBPass("tian1234", "D2n4L0r9"));
+        // 588cfa22f8b26546eb0e528662175dd1
+
+        // LoginVo(a3e0bc5901e43f431d057cbb31ed5b6f
     }
 }

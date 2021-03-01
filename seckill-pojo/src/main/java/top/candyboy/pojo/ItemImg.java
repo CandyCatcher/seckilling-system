@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import java.util.Date;
 
 @Data
-public class ItemImgs {
+public class ItemImg {
 
     @Id
     private String id;

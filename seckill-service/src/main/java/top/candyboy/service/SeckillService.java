@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
+import top.candyboy.redis.RedisOperation;
 import top.candyboy.redis.key.ItemKey;
 import top.candyboy.redis.key.SeckillKey;
 import top.candyboy.util.MD5Util;
@@ -24,7 +25,7 @@ public class SeckillService {
 
     ItemService itemService;
     OrderService orderService;
-    RedisService redisService;
+    RedisOperation redisOperation;
     @Autowired
     public void setItemService(ItemService itemService) {
         this.itemService = itemService;
@@ -34,14 +35,14 @@ public class SeckillService {
         this.orderService = orderService;
     }
     @Autowired
-    public void setRedisService(RedisService redisService) {
-        this.redisService = redisService;
+    public void setRedisOperation(RedisOperation redisOperation) {
+        this.redisOperation = redisOperation;
     }
 
     //进行秒杀减库存
     @Transactional
     public OrderInfo doSeckill(User user, ItemVo itemVo) {
-        //减库存
+        // 尝试减库存
         boolean reduceStock = itemService.reduceStock(itemVo);
         if (reduceStock) {
             //下订单
@@ -58,7 +59,10 @@ public class SeckillService {
         if (seckillOrder != null) {
             return seckillOrder.getOrderId();
         } else {
-            //没有秒杀到，然后有两种情况：没库存，还在队列中
+            /*
+            没有秒杀到，然后有两种情况：没库存，还在队列中
+            这里使用一个标记
+             */
             boolean itemOver = getItemOver(itemId);
             if (itemOver) {
                 return -1;
@@ -69,24 +73,24 @@ public class SeckillService {
     }
 
     private void setItemOver(Long itemId) {
-        redisService.set(ItemKey.stockOver, "" + itemId, true);
+        redisOperation.set(ItemKey.stockOver, "" + itemId, true);
     }
 
     private boolean getItemOver(Long itemId) {
-        return redisService.exist(ItemKey.stockOver, "" + itemId);
+        return redisOperation.exist(ItemKey.stockOver, "" + itemId);
     }
 
     public boolean checkPath(User user, Long itemId, String path) {
         if (user == null || path == null) {
             return false;
         }
-        String s = redisService.get(SeckillKey.getPath, user.getId() + "_" + itemId, String.class);
+        String s = redisOperation.get(SeckillKey.getPath, user.getId() + "_" + itemId, String.class);
         return path.equals(s);
     }
 
     public String createSeckillPath(User user, Long itemId) {
         String uuid = MD5Util.md5(UUIDUtil.uuid());
-        redisService.set(SeckillKey.getPath, user.getId() + "_" + itemId, uuid);
+        redisOperation.set(SeckillKey.getPath, user.getId() + "_" + itemId, uuid);
         return uuid;
     }
 
@@ -124,7 +128,7 @@ public class SeckillService {
         g.dispose();
         //把验证码存到redis中
         int rnd = calc(verifyCode);
-        redisService.set(SeckillKey.getSeckillVerifyCode, user.getId()+"_"+itemId, rnd);
+        redisOperation.set(SeckillKey.getSeckillVerifyCode, user.getId()+"_"+itemId, rnd);
         //输出图片
         return image;
     }
@@ -155,12 +159,12 @@ public class SeckillService {
         if (user == null && itemId <= 0) {
             return false;
         }
-        Integer code = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "_" + itemId, Integer.class);
+        Integer code = redisOperation.get(SeckillKey.getSeckillVerifyCode, user.getId() + "_" + itemId, Integer.class);
         if (code == null || code - verifyCode != 0) {
             return false;
         }
         //否则下一次用还是旧的
-        redisService.del(SeckillKey.getSeckillVerifyCode, user.getId()+","+itemId);
+        redisOperation.del(SeckillKey.getSeckillVerifyCode, user.getId()+","+itemId);
         return true;
     }
 }

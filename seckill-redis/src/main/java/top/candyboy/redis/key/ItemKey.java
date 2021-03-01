@@ -15,6 +15,7 @@ public class ItemKey extends BasePrefix {
     public static ItemKey getItemList = new ItemKey(60, "ck");
     public static ItemKey getItemDetail = new ItemKey(60, "cd");
     public static ItemKey getItemId = new ItemKey("itemId");
+    public static ItemKey getItemStock = new ItemKey("itemStock");
     public static ItemKey stockOver = new ItemKey("stockOver");
 
 }

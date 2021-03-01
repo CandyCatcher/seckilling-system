@@ -6,6 +6,7 @@ import top.candyboy.OrderDao;
 import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.SeckillOrder;
 import top.candyboy.pojo.User;
+import top.candyboy.redis.RedisOperation;
 import top.candyboy.redis.key.OrderKey;
 import top.candyboy.pojo.vo.ItemVo;
 
@@ -15,20 +16,20 @@ import java.util.Date;
 public class OrderService {
 
     OrderDao orderDao;
-    RedisService redisService;
+    RedisOperation redisOperation;
     @Autowired
     public void setOrderDao(OrderDao orderDao) {
         this.orderDao = orderDao;
     }
     @Autowired
-    public void setRedisService(RedisService redisService) {
-        this.redisService = redisService;
+    public void setRedisOperation(RedisOperation redisOperation) {
+        this.redisOperation = redisOperation;
     }
 
     public SeckillOrder getSeckillOrderByUserIdItemId(Long userId, Long itemId) {
         //return orderDao.getSeckillOrderByUserIdItemId(userId, itemId);
-    //    去查缓存
-        SeckillOrder seckillOrder =  redisService.get(OrderKey.getSeckillOrderByUidGid, userId + "_" + itemId, SeckillOrder.class);
+        // 去查缓存
+        SeckillOrder seckillOrder =  redisOperation.get(OrderKey.getSeckillOrderByUidGid, userId + "_" + itemId, SeckillOrder.class);
         return seckillOrder;
     }
 
@@ -48,9 +49,9 @@ public class OrderService {
         seckillOrder.setUserId(user.getId());
         seckillOrder.setItemId(itemVo.getId());
         seckillOrder.setOrderId(orderInfo.getId());
-        //System.out.println(seckillOrder.getItemId());
+
         orderDao.insertSeckillOrder(seckillOrder);
-        redisService.set(OrderKey.getSeckillOrderByUidGid, user.getId() + "_" + itemVo.getId(), seckillOrder);
+        redisOperation.set(OrderKey.getSeckillOrderByUidGid, user.getId() + "_" + itemVo.getId(), seckillOrder);
         return orderInfo;
     }
 
