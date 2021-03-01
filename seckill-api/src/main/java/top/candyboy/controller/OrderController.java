@@ -2,9 +2,7 @@ package top.candyboy.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import top.candyboy.pojo.OrderInfo;
 import top.candyboy.pojo.User;
 import top.candyboy.result.CodeMsg;
@@ -15,7 +13,7 @@ import top.candyboy.service.SeckillService;
 import top.candyboy.pojo.vo.ItemVo;
 import top.candyboy.pojo.vo.OrderDetailVo;
 
-@Controller
+@RestController
 public class OrderController {
     OrderService orderService;
     ItemService itemService;
@@ -33,8 +31,7 @@ public class OrderController {
         this.seckillService = seckillService;
     }
 
-    @RequestMapping("orderDetail")
-    @ResponseBody
+    @GetMapping(value = "/pay")
     public Result<OrderDetailVo> orderDetail(User user, @RequestParam("orderId")Long orderId) {
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);

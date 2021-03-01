@@ -179,10 +179,9 @@ public class SeckillController implements InitializingBean {
     /*
     进入到队列之后，客户端会一直轮询
      */
-    @RequestMapping(value = "/seckill_result", method = RequestMethod.GET)
-    @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
+    @GetMapping(value = "/getSeckillResult")
     public Result<Long> secSkillResult(User user, @RequestParam("ItemId")Long ItemId) {
+
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
         }
@@ -196,9 +195,10 @@ public class SeckillController implements InitializingBean {
         return Result.success(result);
     }
 
+    /*
+    获取秒杀链接
+     */
     @RequestMapping(value = "/getSeckillPath", method = RequestMethod.GET)
-    @ResponseBody
-    //public Result<OrderInfo> secSkill(Model model, User user, @RequestParam("ItemId")Long ItemId) {
     public Result<String> getSeckillPath(User user, @RequestParam("ItemId")Long ItemId, @RequestParam("verifyCode")int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SERVER_ERROR);
