@@ -33,7 +33,7 @@ public class OrderService {
         return seckillOrder;
     }
 
-    public OrderInfo createOrder(User user, ItemVo itemVo) {
+    public OrderInfo createOrder(Long userId, ItemVo itemVo) {
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setCreateDate(new Date());
         orderInfo.setItemCount(1);
@@ -42,16 +42,16 @@ public class OrderService {
         orderInfo.setItemPrice(itemVo.getSeckillingPrice());
         orderInfo.setOrderChannel(1);
         orderInfo.setStatus(0);
-        orderInfo.setUserId(user.getId());
+        orderInfo.setUserId(userId);
         orderDao.insertOrder(orderInfo);
 
         SeckillOrder seckillOrder = new SeckillOrder();
-        seckillOrder.setUserId(user.getId());
+        seckillOrder.setUserId(userId);
         seckillOrder.setItemId(itemVo.getId());
         seckillOrder.setOrderId(orderInfo.getId());
 
         orderDao.insertSeckillOrder(seckillOrder);
-        redisOperation.set(OrderKey.getSeckillOrderByUidGid, user.getId() + "_" + itemVo.getId(), seckillOrder);
+        redisOperation.set(OrderKey.getSeckillOrderByUidGid, userId + "_" + itemVo.getId(), seckillOrder);
         return orderInfo;
     }
 

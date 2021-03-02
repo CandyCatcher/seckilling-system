@@ -9,11 +9,12 @@ public class MQConfig {
 
     public static final String SECKILL_QUEUE = "seckillQueue";
 
-    /*
     @Bean
     public Queue queue() {
         return new Queue(SECKILL_QUEUE, true);
     }
+
+    /*
 
     public static final String QUEUE = "queue";
 

@@ -89,6 +89,7 @@ public class ItemController {
      */
     @GetMapping(value = "/itemList")
     public Result<List<ItemVo>> list() {
+
         /*
         1.redis缓存中是否有
         2.  没有的话添加

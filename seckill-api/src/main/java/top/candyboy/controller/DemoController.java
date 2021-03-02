@@ -111,7 +111,7 @@ public class DemoController {
         user.setPassword("1234");
         user.setNickname("qwe");
         SeckillMessage seckillMessage = new SeckillMessage();
-        seckillMessage.setUser(user);
+        seckillMessage.setUserId(user.getId());
         seckillMessage.setItemId((long) 2345678);
         sender.sendMessage(seckillMessage);
         return Result.success("hello");

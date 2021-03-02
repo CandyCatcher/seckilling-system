@@ -45,6 +45,7 @@ public class LoginController extends BaseController {
 
         //判断手机号在数据库是否存在
         User user = userService.getUserById(Long.valueOf(mobile));
+
         if (user == null) {
             return Result.error(CodeMsg.MOBILE_NOT_EXIST);
         }

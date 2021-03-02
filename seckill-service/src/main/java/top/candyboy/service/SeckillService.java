@@ -41,12 +41,12 @@ public class SeckillService {
 
     //进行秒杀减库存
     @Transactional
-    public OrderInfo doSeckill(User user, ItemVo itemVo) {
+    public OrderInfo doSeckill(Long userId, ItemVo itemVo) {
         // 尝试减库存
         boolean reduceStock = itemService.reduceStock(itemVo);
         if (reduceStock) {
             //下订单
-            return orderService.createOrder(user, itemVo);
+            return orderService.createOrder(userId, itemVo);
         } else {
             //没库存了，将商品id加载到库存中
             setItemOver(itemVo.getId());
@@ -80,17 +80,17 @@ public class SeckillService {
         return redisOperation.exist(ItemKey.stockOver, "" + itemId);
     }
 
-    public boolean checkPath(User user, Long itemId, String path) {
-        if (user == null || path == null) {
+    public boolean checkPath(Long userId, Long itemId, String path) {
+        if (userId == null || path == null) {
             return false;
         }
-        String s = redisOperation.get(SeckillKey.getPath, user.getId() + "_" + itemId, String.class);
+        String s = redisOperation.get(SeckillKey.getPath, userId + "_" + itemId, String.class);
         return path.equals(s);
     }
 
-    public String createSeckillPath(User user, Long itemId) {
+    public String createSeckillPath(Long userId, Long itemId) {
         String uuid = MD5Util.md5(UUIDUtil.uuid());
-        redisOperation.set(SeckillKey.getPath, user.getId() + "_" + itemId, uuid);
+        redisOperation.set(SeckillKey.getPath, userId + "_" + itemId, uuid);
         return uuid;
     }
 

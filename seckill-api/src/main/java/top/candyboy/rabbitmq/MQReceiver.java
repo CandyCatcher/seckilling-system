@@ -44,7 +44,7 @@ public class MQReceiver {
         logger.info("receiver message" + message);
         SeckillMessage seckillMessage = RedisOperation.stringToBean(message, SeckillMessage.class);
 
-        User user = seckillMessage.getUser();
+        Long userId = seckillMessage.getUserId();
         Long itemId = seckillMessage.getItemId();
 
         /*
@@ -60,7 +60,7 @@ public class MQReceiver {
         /*
         判断是否已秒杀
          */
-        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(user.getId(), itemId);
+        SeckillOrder seckillOrder = orderService.getSeckillOrderByUserIdItemId(userId, itemId);
         if (seckillOrder != null) {
             System.out.println("已经秒杀完事儿了");
             return;
@@ -69,7 +69,7 @@ public class MQReceiver {
         /*
         下订单并写入秒杀订单
          */
-        seckillService.doSeckill(user, itemVo);
+        seckillService.doSeckill(userId, itemVo);
     }
 
    /*
