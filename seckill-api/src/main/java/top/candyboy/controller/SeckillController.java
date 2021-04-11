@@ -42,7 +42,7 @@ import java.util.Map;
  * 5.客户端轮询，是否秒杀成功
  */
 @RestController
-public class SeckillController {
+public class SeckillController implements InitializingBean{
 
     private Map<Long, Boolean> localOverMap = new HashMap<>();
 

@@ -2,47 +2,33 @@ package top.candyboy.redis;
 
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import top.candyboy.redis.KeyPrefix;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 
 @Service
 public class RedisOperation {
 
-    JedisPool jedisPool;
     @Autowired
-    public void setJedisPool(JedisPool jedisPool) {
-        this.jedisPool = jedisPool;
-    }
+    private RedisTemplate<String, String> redisTemplate;
 
     //获取到的是一个bean
 
-    /**
-     * 获取单个对象
-     * @param prefix
-     * @param key
-     * @param tClass
-     * @param <T>
-     * @return
-     */
     public <T> T get(KeyPrefix prefix, String key, Class<T> tClass) {
-        Jedis jedis = null;
-        //连接池的话一定要记得关闭
-        try {
-            jedis = jedisPool.getResource();
-            String realKey = prefix.getPrefix() + key;
-            String s = jedis.get(realKey);
-            //System.out.println("s" + s);
-            return stringToBean(s, tClass);
-        } finally {
-            returnToPool(jedis);
-        }
+        String realKey = prefix.getPrefix() + key;
+        String value = redisTemplate.opsForValue().get(realKey);
+        return stringToBean(value, tClass);
     }
 
     /**
-     * 设置对象
+     * 设置单个的值
      * @param prefix 前缀
      * @param key 键
      * @param value 值
@@ -50,71 +36,73 @@ public class RedisOperation {
      * @return
      */
     public <T> boolean set(KeyPrefix prefix, String key, T value) {
-        Jedis jedis = null;
         try {
-            jedis = jedisPool.getResource();
-            String s = beanToString(value);
-            if (s == null || s.length() <= 0) {
+            //将value转为string
+            String realValue = beanToString(value);
+            if (realValue == null || realValue.length() <= 0) {
                 return false;
             }
             //生成真正的key
             String realKey = prefix.getPrefix() + key;
             int seconds = prefix.expireSeconds();
             if (seconds <= 0) {
-                jedis.set(realKey, s);
+                redisTemplate.opsForValue().set(realKey, realValue);
             } else {
-                jedis.setex(realKey, seconds, s);
+                redisTemplate.opsForValue().set(realKey, realValue, seconds, TimeUnit.SECONDS);
             }
             return true;
-        } finally {
-            returnToPool(jedis);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 设置一个list类型的值
+     * @param prefix
+     * @param key
+     * @param value
+     * @param <T>
+     * @return
+     */
+    public <T> boolean setList(KeyPrefix prefix, String key, T value) {
+
+        try {
+            //将value转为string
+            String realValue = beanToString(value);
+            if (realValue == null || realValue.length() <= 0) {
+                return false;
+            }
+            //生成真正的key
+            String realKey = prefix.getPrefix() + key;
+            int seconds = prefix.expireSeconds();
+            redisTemplate.opsForList().rightPushAll(realKey, realValue);
+            if (seconds > 0) {
+                expire(key, seconds);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
     public <T> boolean exist(KeyPrefix prefix, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            String realKey = prefix.getPrefix() + key;
-            return jedis.exists(realKey);
-        } finally {
-            returnToPool(jedis);
-        }
+        String realKey = prefix.getPrefix() + key;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(realKey));
     }
 
     public <T> Long incr(KeyPrefix prefix, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            String realKey = prefix.getPrefix() + key;
-            return jedis.incr(realKey);
-        } finally {
-            returnToPool(jedis);
-        }
+        String realKey = prefix.getPrefix() + key;
+        return redisTemplate.opsForValue().increment(realKey, 1);
     }
 
     public <T> Long decr(KeyPrefix prefix, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            String realKey = prefix.getPrefix() + key;
-            //这是一个原子操作
-            return jedis.decr(realKey);
-        } finally {
-            returnToPool(jedis);
-        }
+        String realKey = prefix.getPrefix() + key;
+        return redisTemplate.opsForValue().increment(realKey, -1);
     }
 
     public boolean del(KeyPrefix prefix, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            String realKey = prefix.getPrefix() + key;
-            Long del = jedis.del(realKey);
-            return del > 0;
-        } finally {
-            returnToPool(jedis);
-        }
+        String realKey = prefix.getPrefix() + key;
+        return Boolean.TRUE.equals(redisTemplate.delete(realKey));
     }
 
     public  <T> String beanToString(T value) {
@@ -153,11 +141,23 @@ public class RedisOperation {
         }
     }
 
-    public void returnToPool(Jedis jedis) {
-        if (jedis != null) {
-            //将它放回到连接池中
-            jedis.close();
+    /**
+     * 指定缓存失效时间
+     *
+     * @param key 键
+     * @param time 时间(秒)
+     * @return
+     */
+    public boolean expire(String key, long time) {
+        try {
+            if (time > 0) {
+                redisTemplate.expire(key, time, TimeUnit.SECONDS);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
+
 
 }

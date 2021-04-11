@@ -15,4 +15,6 @@ public class ItemDetailVo {
     private ItemVo itemVo;
     private List<ItemImg> itemImg;
     private User user;
+    private String startDate;
+    private String endDate;
 }

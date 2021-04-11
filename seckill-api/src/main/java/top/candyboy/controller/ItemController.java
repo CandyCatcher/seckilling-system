@@ -19,6 +19,7 @@ import top.candyboy.pojo.vo.ItemDetailVo;
 import top.candyboy.pojo.vo.ItemVo;
 import top.candyboy.util.JsonUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class ItemController {
         2.  没有的话添加
             有的话直接获取
          */
-        List<ItemVo>  itemVoList = new ArrayList<>();
+        List<ItemVo> itemVoList = new ArrayList<>();
         String itemVoListStr = redisOperation.get(ItemKey.getItemList, "", String.class);
         if (StringUtils.isBlank(itemVoListStr)) {
             itemVoList = itemService.getListItemVO();
@@ -150,6 +151,9 @@ public class ItemController {
         ItemDetailVo itemDetailVo = new ItemDetailVo();
         itemDetailVo.setItemVo(itemVo);
         itemDetailVo.setItemImg(itemImgs);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        itemDetailVo.setStartDate(format.format(startDate));
+        itemDetailVo.setEndDate(format.format(endDate));
         //itemDetailVo.setUser(user);
         itemDetailVo.setRemainSeconds(remainSeconds);
         itemDetailVo.setSeckillingStatus(status);

@@ -23,8 +23,8 @@ spring:
     password: root
     hikari:
       connection-timeout: 30000       # 等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQLException， 默认:30秒
-      minimum-idle: 5                 # 最小连接数
-      maximum-pool-size: 20           # 最大连接数
+      minimum-idle: 100                 # 最小连接数
+      maximum-pool-size: 1000           # 最大连接数
       auto-commit: true               # 自动提交
       idle-timeout: 600000            # 连接超时的最大时长（毫秒），超时则被释放（retired），默认:10分钟
       pool-name: DateSourceHikariCP   # 连接池名字
@@ -34,28 +34,23 @@ spring:
         multipart:
           max-file-size: 512000     # 文件上传大小限制为500kb
           max-request-size: 512000  # 请求大小限制为500kb
-
-#      session:
-#        store-type: redis
-#    type: com.alibaba.druid.pool.DruidDataSource
-#  thymeleaf:
-#    cache: false
-#    servlet:
-#      content-type: text/html
-#    enabled: true
-#    encoding: UTF-8
-#    mode: HTML5
-#    prefix: classpath:templates/
-#    suffix: .html
   redis:
-    host: 127.0.0.1
-    port: 6379
-    timeout: 3
+    cluster:
+      nodes:
+        - 1.116.87.203:7001
+        - 1.116.87.203:7002
+        - 1.116.87.203:7003
+        - 1.116.88.73:7004
+        - 1.116.88.73:7005
+        - 1.116.88.73:7006
+      max-redirects: 3
     jedis:
       pool:
-        max-idle: 10
-        max-wait: 3
-        max-active: 10
+        max-idle: 2000
+        max-wait: -1
+        max-active: 2000
+        min-idle: 200
+    timeout: 5000
   resources:
     add-mappings: true
     chain:
@@ -67,10 +62,10 @@ spring:
     cache:
       period: 3000
   rabbitmq:
-    host: 127.0.0.1
+    host: 1.116.87.203
     port: 5672
-    username: guest
-    password: guest
+    username: admin
+    password: admin
     virtual-host: /
     listener:
       simple:
